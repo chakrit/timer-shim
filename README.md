@@ -89,6 +89,7 @@ Sets a function to run after the specified timeout
 `timer.i`  
 `timer.in`  
 `timer.iv`  
+`timer.interval`  
 `timer.setInterval`  
 Sets a function to repeatedly every set interval.
 
