@@ -56,6 +56,29 @@ do ->
       @timer.should.be.instanceof @timer.Timer
 
 
+    describe 'nextTick() method', ->
+      it 'should be exported', ->
+        @timer.should.respondTo 'nextTick'
+
+      it 'should be aliased as n,nt,tick,nexttick,nextTick', ->
+        assertAliases @timer, 'n,nt,tick,nexttick,nextTick'.s()
+
+      it 'should complains if action is not a function', ->
+        (=> @timer.nt { }).should.throw /action/
+
+      it 'should works like process.nextTick or setTimeout(0)', (done) ->
+        @timer.nt done
+
+      it 'should works when process.nextTick is not available', (done) ->
+        original = process.nextTick
+
+        try
+          process.nextTick = null
+          @timer.nt done
+        finally
+          process.nextTick = original
+
+
     describe 'clear() method', ->
       it 'should be exported', ->
         @timer.should.respondTo 'clearTimeout'

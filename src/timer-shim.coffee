@@ -3,7 +3,8 @@
 module.exports = do ->
 
   # utils
-  alias = (klass, names..., action) ->
+  alias = (klass, names, action) ->
+    names = names.split ','
     klass::[name] = action for name in names
 
   validate = (timeout, action) ->
@@ -17,16 +18,26 @@ module.exports = do ->
   # timer class
   class Timer
 
-  alias Timer, 't,to,timeout,setTimeout'.split(',')...,
+
+  alias Timer, 'n,nt,tick,nexttick,nextTick',
+    (action) ->
+      throw new Error('action is not a function') unless typeof action is 'function'
+
+      if process and process.nextTick
+        process.nextTick action
+      else
+        setTimeout action, 0
+
+  alias Timer, 't,to,timeout,setTimeout',
     (timeout, action) ->
       [timeout, action] = validate timeout, action
       setTimeout action, timeout
 
-  alias Timer, 'c,ct,cto,clear,clearTimeout'.split(',')...,
+  alias Timer, 'c,ct,cto,clear,clearTimeout',
     (handle) ->
       clearTimeout handle
 
-  alias Timer, 'i,in,iv,interval,setInterval'.split(',')...,
+  alias Timer, 'i,in,iv,interval,setInterval',
     (timeout, action) ->
       [timeout, action] = validate timeout, action
       setInterval action, timeout
