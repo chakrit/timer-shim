@@ -73,11 +73,21 @@ describe('timer functionality', function() {
 
 # API
 
+`timer.n`  
+`timer.nt`  
+`timer.tick`  
+`timer.nexttick`  
+`timer.nextTick`
+
+Same as `process.nextTick` for node and
+delegates to `setTimeout` with 0 delay everywhere else.
+
 `timer.c`  
 `timer.ct`  
 `timer.cto`  
 `timer.clear`  
 `timer.clearTimeout`  
+
 Clears the timeout handle given.
 
 `timer.t`  
