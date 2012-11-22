@@ -1,6 +1,6 @@
 {
   "name": "timer-shim",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Test-friendly timer function replacements.",
   "main": "index.js",
   "scripts": {
