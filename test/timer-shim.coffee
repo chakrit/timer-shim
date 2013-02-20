@@ -2,27 +2,20 @@
 # test/timer-shim.coffee - Timer shim tests
 do ->
 
-  # use file with coverage information on cover mode
   FILE = '../src/timer-shim.coffee'
   if process.env.COVER
     FILE = '../lib-cov/timer-shim.js'
 
-  # infect prototype for simpler tests
   assert = require 'assert'
+  { stub, spy } = require 'sinon'
+
+  # prototype infections
   require('chai').should()
   String::s = -> this.split ','
 
-  # helper funcs
-  badAction = ->
-    throw new Error('function should not have been called')
-
-  assertAliases = (obj, aliases) ->
-    for name in aliases
-      obj.should.respondTo name
-      assert obj[name] is obj[aliases[0]]
-
-
   # shared tests
+  badAction = -> throw new Error 'function should not have been called'
+
   itShouldHandleArgsWell = ->
     it 'should complains if timeout is not a number', ->
       (=> @call NaN).should.throw /timeout/
@@ -37,13 +30,28 @@ do ->
 
     it 'should returns timeout handle', (done) ->
       handle = @call 1, badAction
-      clearTimeout handle
+      @timer.clear handle
       setTimeout done, 10
+
+  itShouldHaveAliases = (name, aliases) ->
+    it "should be aliased as #{aliases.join ', '}", ->
+      stub @klass::, name
+
+      for alias in aliases
+        @timer[alias]()
+        @klass::[name].should.have.been.called
+        @klass::[name].reset()
+
+      @klass::[name].restore()
 
 
   describe 'Timer shim', ->
-    beforeEach -> @timer = require(FILE)
-    afterEach -> delete @timer
+    beforeEach ->
+      @timer = require FILE
+      @klass = @timer.Timer
+    afterEach ->
+      delete @timer
+      delete @klass
 
     it 'should be exported', ->
       @timer.should.be.an 'object'
@@ -55,18 +63,15 @@ do ->
     it 'should be instance of the exported Timer class', ->
       @timer.should.be.instanceof @timer.Timer
 
-
     describe 'clear() method', ->
       it 'should be exported', ->
         @timer.should.respondTo 'clearTimeout'
 
-      it 'should be aliased as c, ct, cto, clear and clearTimeout', ->
-        assertAliases @timer, 'c,ct,cto,clear,clearTimeout'.s()
+      itShouldHaveAliases 'clear', 'c,ct,cto,clear,clearTimeout,clearInterval'.s()
 
       it 'should clears timeout handle', (done) ->
-        @timer.c (setTimeout badAction, 1)
+        @timer.clear @timer.timeout badAction, 1
         setTimeout done, 10
-
 
     describe 'timeout() method', ->
       before -> @call = -> @timer.t.apply @timer, arguments
@@ -75,14 +80,11 @@ do ->
       it 'should be exported', ->
         @timer.should.respondTo 'timeout'
 
-      it 'should be aliased as t, to, timeout and setTimeout', ->
-        assertAliases @timer, 't,to,timeout,setTimeout'.s()
-
       itShouldHandleArgsWell()
+      itShouldHaveAliases 'timeout', 't,to,timeout,setTimeout'.s()
 
       it 'should works like setTimeout', (done) ->
         @call 1, done # mocha will complain for multiple calls
-
 
     describe 'interval() method', ->
       before -> @call = -> @timer.i.apply @timer, arguments
@@ -91,15 +93,13 @@ do ->
       it 'should be exported', ->
         @timer.should.respondTo 'interval'
 
-      it 'should be aliased as i, in, iv, interval and setInterval', ->
-        assertAliases @timer, 'i,in,iv,interval,setInterval'.s()
-
       itShouldHandleArgsWell()
+      itShouldHaveAliases 'interval', 'i,in,iv,inv,setInterval'.s()
 
       it 'should works like setInterval', (done) ->
         count = 0
         handle = @call 1, =>
           if ++count is 3
-            clearTimeout handle
+            @timer.clear handle
             done()
 
