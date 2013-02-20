@@ -3,17 +3,32 @@
 
 > All problems in computer science can be solved by another level of indirection
 
-TIMER-SHIM is a simple wrapper around standard timer functions which allows you to stub / test / fake their call and timing function without resorting to tricky global setTimeout/setInterval override.
+TIMER-SHIM is a simple wrapper around standard timer functions adding the ability to mock
+/ stub / test timing functions with ease.
 
-If you have trouble getting mocha and sinon fake timers to behave, you might find this simple module useful.
+If you have trouble getting mocha and sinon fake timers to behave, or you have trouble
+testing code that depends on `setTimeout` and/or `setInterval` you will find this simple
+comes in quite handy.
 
-Additionally, TIMER-SHIM also provides a few niceties over standard timer functions, including:
+Additionally, TIMER-SHIM also provides a few niceties over standard timer functions,
+including:
 
-* Call with timeout number before the function.
+* Call with timeout number before the function (or vice versa - doesn't matter.)
 * Shorter and simpler aliases without any magic or prototype infection.
-* Validates against NaN and non-function values to save you debugging time.
+* Protect against NaN and non-function values to save you debugging time.
 
-At its core, it simply delegates the calls to setTimeout/setInterval internally but by calling those function via TIMER-SHIM you can more easily test your time-dependent code.
+And best of all:
+
+* Provides `pause()`, `resume()` and `wind()` so you can test your timing functionality
+  directly in a sane way.
+
+At its core, the shim simply delegates calls to `setTimeout`/`setInterval` internally but
+by calling those function via TIMER-SHIM you can more easily test your time-dependent
+code.
+
+There is a little caveat though, as I try not to pollute your global namespace in that you
+must update all your `setTimeout` and `setInterval` to use TIMER-SHIM's provided functions
+instead to be able to use the time simulation functions.
 
 # INSTALL
 
@@ -36,62 +51,41 @@ handle = timer.interval(100, function() {
 });
 ```
 
-# SAMPLE MOCHA/SINON-CHAI TEST STUBBING
-
-Write your code using the timer module like this:
-
-```js
-var timer = require('timer-shim');
-
-function testWithTimeout() {
-  // complicated timeout code
-  internalState = false
-  timer.timeout(100, function() {
-    // more complicated code
-    internalState = true
-  });
-}
-```
-
-Then write your test like this:
-
-```js
-var timer = require('timer-shim');
-
-describe('timer functionality', function() {
-  it('should works', function() {
-    sinon.stub(timer, 'timeout').callsArg(1)
-
-    testWithTimeout();
-    timer.timeout.should.have.been.calledWith(100);
-    interalState.should.be.true
-
-    timer.timeout.restore();
-  });
-});
-```
+See `example/code.js` and `example/test.js` for an example on how to write code / test the
+code.
 
 # API
+
+`timer.Timer`  
+Internal class for handling timers. Instances exports the same API as the module itself.
+You can create multiple instances of this class if you need to `pause()`, `resume()` and
+`wind()` only a certain set of functions while leaving other set of functions still
+working normally.
 
 `timer.c`  
 `timer.ct`  
 `timer.cto`  
 `timer.clear`  
 `timer.clearTimeout`  
-Clears the timeout handle given.
+`timer.clearInterval`  
+Clears the timeout handle given. Only works with TIMER-SHIM's provided handles. Does not
+works with handles returned from native `setTimeout` or `setInterval`.
 
 `timer.t`  
 `timer.to`  
 `timer.timeout`  
 `timer.setTimeout`  
-Sets a function to run after the specified timeout
+Schedules a function to run after the specified timeout. Returns a TIMER-SHIM handle.
 
 `timer.i`  
 `timer.in`  
 `timer.iv`  
+`timer.inv`  
 `timer.interval`  
 `timer.setInterval`  
-Sets a function to repeatedly every set interval.
+Schedules a function to run repeatedly every set interval. Returns a TIMER-SHIM handle.
+
+# OVERLOADS
 
 Both `timer.timeout` and `timer.interval` can be called in either of the following ways:
 
@@ -108,19 +102,21 @@ timer.interval(function() { }, 100);
 Test with:
 
 ```sh
-$ npm install -d && make test
+make test
 ```
 
 Compiles with:
 
 ```sh
-$ npm install -d && make lib/timer-shim.js
+$ make lib/timer-shim.js
 ```
 
 #### TODOs
 
-* Ability to fast-forward timers ala sinon fake timers.
-* Ability to infect global setTimeout/setInterval and route it to call the shim functions instead.
+* Ability to infect global setTimeout/setInterval and route it to call the shim functions
+  instead.
+* Performance optimizations.
+* nextTick support?
 
 # LICENSE
 
