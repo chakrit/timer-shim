@@ -39,17 +39,22 @@ module.exports = do ->
       return if @canceled or @paused
       @_pause()
       @id = null
+
       @paused = true
+      @windedTime = 0
 
     resume: ->
       return if @canceled or not @paused
-      @id = @_resume()
+      @id = @_resume @windedTime
+
       @paused = false
+      @windedTime = 0
 
     wind: (time) ->
       return if @canceled or not @paused
+
       @windedTime += time
-      @action() if @windedTime >= @time
+      @windedTime = @_wind @windedTime
 
     _pause: -> throw new Error 'must be overridden'
     _resume: -> throw new Error 'must be overridden'
@@ -57,18 +62,31 @@ module.exports = do ->
 
   class IntervalTask extends Task
     _pause: -> clearInterval @id
-    _resume: ->
-      unless @windedTime
+    _resume: (time) ->
+      unless time
         setInterval @action, @time
       else
         setTimeout => # shorten first action after a wind()
           @action()
           @id = setInterval @action, @time
-        , @time - @windedTime
+        , @time - time
+
+    _wind: (time) ->
+      while time >= @time
+        time -= @time
+        @action()
+
+      return time
 
   class TimeoutTask extends Task
     _pause: -> clearTimeout @id
-    _resume: -> setTimeout @action, @time - @windedTime
+    _resume: (time) -> setTimeout @action, @time - time
+    _wind: (time) ->
+      return time if time < @time
+
+      @action()
+      @canceled = true
+      return 0
 
 
   taskFactoryFor = (Klass) -> (timeout, action) ->

@@ -125,11 +125,25 @@ do ->
               @timer.clear good
               done()
 
-            @timer.wind 20
+            @timer.wind 15
 
-          describe 'resume()-ing after a wind()', ->
+          it "should causes action queued via #{method}() to be invalidated after resume() if timeout is higher than action timeout", (done) ->
+            didFinish = false
+            good = @timer[method] 1, =>
+              unless didFinish
+                @timer.clear good
+                setTimeout done, 10
+                didFinish = true
+              else
+                badAction()
+
+            @timer.wind 1
+            @timer.resume()
+
+        describe 'resume()-ing after a wind()', ->
+          forEachTimeoutMethod (method) ->
             it "should resume first invocation of action queued via #{method}() to with less timeout", (done) ->
-              bad = setTimeout badAction, 10
+              bad = setTimeout badAction, 50
               good = @timer[method] 1000, => # test timeout < 1000
                 clearTimeout bad
                 @timer.clear good
@@ -137,6 +151,29 @@ do ->
 
               @timer.wind 999
               @timer.resume()
+
+        it 'should causes action queued via interval() to run multiple times if timeout is a multiple of action timeout', ->
+          count = 0
+          good = @timer.interval 1, => ++count
+
+          @wind 3
+          count.should.eq 3
+
+        it 'should *not* causes action queued via timeout() to run multiple times if timeout is a multiple of action timeout', ->
+          count = 0
+          @timer.timeout 1, => ++count
+
+          @wind 3
+          count.should.eq 1
+
+        it 'should *not* causes action queued via timeout() to run multiple times if called multiple times', ->
+          count = 0
+          @timer.timeout 1, => ++count
+
+          @wind 1
+          @wind 1
+          @wind 1
+          count.should.eq 1
 
 
     describe 'resume() method', ->
