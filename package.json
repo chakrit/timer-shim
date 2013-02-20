@@ -4,7 +4,8 @@
   "description": "Test-friendly timer function replacements.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "make test",
+    "prepublish": "make all"
   },
   "repository": {
     "type": "git",
