@@ -85,6 +85,19 @@ Schedules a function to run after the specified timeout. Returns a TIMER-SHIM ha
 `timer.setInterval`  
 Schedules a function to run repeatedly every set interval. Returns a TIMER-SHIM handle.
 
+`timer.pause`  
+Pauses all timing functions that has not yet run and all functions that may be scheduled
+in the future.
+
+`timer.resume`  
+Resumes all scheduled function as though the time hasn't flickered.
+
+`timer.wind( time )`  
+Only works when paused. Winds the internal clock by the specified `time` (in ms) running
+anything that is scheduled to be run in that amount of time. `resume()`-ing after this
+point will execute any scheduled functions as though `time` has passed (i.e. shorter
+timeout, shorter first invocation of interval function)
+
 # OVERLOADS
 
 Both `timer.timeout` and `timer.interval` can be called in either of the following ways:
