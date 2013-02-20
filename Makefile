@@ -15,7 +15,10 @@ clean:
 node_modules:
 	npm install
 
-lib/%.js: node_modules src/%.coffee
+all: lib/timer-shim.js
+
+lib/%.js: node_modules
+lib/%.js: src/%.coffee
 	@$(BIN)/coffee $(COMPILE_OPTS) --output $(@D) $<
 watch: node_modules
 	@$(BIN)/coffee $(COMPILE_OPTS) --watch --output lib/timer-shim.js src/timer-shim.coffee
