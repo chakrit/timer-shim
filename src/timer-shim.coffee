@@ -4,7 +4,8 @@ module.exports = do ->
 
   # Configuration
   # TODO: Make configurable
-  CLEAN_THRESHOLD = 100
+  INITIAL_THRESHOLD = 10
+  CLEAN_THRESHOLD = 1.10
 
 
   # speed up removals with linkedlist
@@ -126,7 +127,7 @@ module.exports = do ->
 
     constructor: ->
       @tasks = new LinkedList
-      @_lastCleanedLength = 0
+      @_lastCleanedLength = INITIAL_THRESHOLD
 
       bindAll this, Timer
 
@@ -151,7 +152,7 @@ module.exports = do ->
       @tasks.current.wind time while @tasks.next()
 
     _checkAndClean: ->
-      return unless @tasks.length > @_lastCleanedLength + CLEAN_THRESHOLD
+      return unless @tasks.length > @_lastCleanedLength * CLEAN_THRESHOLD
 
       @tasks.resetCursor()
       while @tasks.next() when @tasks.current.canceled
