@@ -36,7 +36,7 @@ do ->
 
     it 'should exports `tasks` property that is initially empty', ->
       @timer.should.have.property 'tasks'
-      @timer.tasks.should.be.empty
+      @timer.tasks.should.have.length 0
 
     describe 'clear() method', ->
       beforeEach -> @clear = @timer.clear

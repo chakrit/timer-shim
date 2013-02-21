@@ -2,6 +2,24 @@
 # timer-shim.coffee - Main timer shim exports
 module.exports = do ->
 
+  # Configuration
+  # TODO: Make configurable
+  CLEAN_THRESHOLD = 100
+
+
+  # speed up removals with linkedlist
+  LinkedList = require 'linkedlist'
+
+  LinkedList::remove = (ll, item) ->
+    ll.resetCursor()
+    while ll.next() and item isnt ll.current
+      ; # no-op
+
+    return false if ll.current isnt item
+
+    ll.removeCurrent()
+    return true
+
   # utils
   alias = (Klass, action, names) ->
     for name in names
@@ -95,6 +113,8 @@ module.exports = do ->
 
     @tasks.push task
     task.resume() unless @paused
+
+    @_checkAndClean()
     return task
 
 
@@ -102,9 +122,12 @@ module.exports = do ->
   class Timer
     paused: false
     tasks: null
+    _lastCleanedLength: 0
 
     constructor: ->
-      @tasks = []
+      @tasks = new LinkedList
+      @_lastCleanedLength = 0
+
       bindAll this, Timer
 
     timeout: taskFactoryFor TimeoutTask
@@ -114,15 +137,27 @@ module.exports = do ->
       task.cancel()
 
     pause: ->
-      task.pause() for task in @tasks
+      @tasks.resetCursor()
+      @tasks.current.pause() while @tasks.next()
       @paused = true
 
     resume: ->
-      task.resume() for task in @tasks
+      @tasks.resetCursor()
+      @tasks.current.resume() while @tasks.next()
       @paused = false
 
     wind: (time) ->
-      task.wind time for task in @tasks
+      @tasks.resetCursor()
+      @tasks.current.wind time while @tasks.next()
+
+    _checkAndClean: ->
+      return unless @tasks.length > @_lastCleanedLength + CLEAN_THRESHOLD
+
+      @tasks.resetCursor()
+      while @tasks.next() when @tasks.current.canceled
+        @tasks.removeCurrent()
+
+      @_lastCleanedLength = @tasks.length
 
 
   ALIASES =
