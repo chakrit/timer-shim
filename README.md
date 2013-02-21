@@ -30,6 +30,12 @@ There is a little caveat though, as I try not to pollute your global namespace i
 must update all your `setTimeout` and `setInterval` to use TIMER-SHIM's provided functions
 instead to be able to use the time simulation functions.
 
+Internally a [node-linkedlist](https://github.com/kilianc/node-linkedlist) is used to
+track scheduled tasks with very basic adaptive cleanup. From a set of benchmarks I have
+ran, using TIMER-SHIM vs setTimeout adds no more than 100ms overhead for 100,000 tasks on
+a decent MBA. This overhead will be completly togglable in the future so you can have
+shims for tests and zero overhead for production.
+
 # INSTALL
 
 ```sh
@@ -128,6 +134,8 @@ $ make lib/timer-shim.js
 
 * Ability to infect global setTimeout/setInterval and route it to call the shim functions
   instead.
+* Ability to un-shim the the shims and send calls directly to setTimeout/setInterval
+  virtually removing any perf and mem impact (i.e. in production.)
 * Performance optimizations.
 * nextTick support?
 
