@@ -73,6 +73,17 @@ do ->
         @timer.clear @timer.timeout badAction, 1
         setTimeout done, 10
 
+    describe 'clearAll() method', ->
+      it 'should be exported', ->
+        @timer.should.respondTo 'clearAll'
+
+      it 'should clears all timeout handles', (done) ->
+        @timer.timeout badAction, 1
+        @timer.interval badAction, 1
+
+        setTimeout done, 10
+        @timer.clearAll()
+
     describe 'timeout() method', ->
       before -> @call = -> @timer.t.apply @timer, arguments
       after -> delete @call

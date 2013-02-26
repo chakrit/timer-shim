@@ -137,6 +137,13 @@ module.exports = do ->
     clear: (task) ->
       task.cancel()
 
+    clearAll: () ->
+      @tasks.resetCursor()
+      while @tasks.next()
+        @clear @tasks.current
+
+      @tasks = new LinkedList
+
     pause: ->
       @tasks.resetCursor()
       @tasks.current.pause() while @tasks.next()

@@ -77,6 +77,10 @@ working normally.
 Clears the timeout handle given. Only works with TIMER-SHIM's provided handles. Does not
 works with handles returned from native `setTimeout` or `setInterval`.
 
+`timer.clearAll`  
+Clears all registered timeout handles. Effectively cancels all scheduled timeout and
+intervals. Useful for reseting the timer in tests.
+
 `timer.t`  
 `timer.to`  
 `timer.timeout`  
