@@ -108,6 +108,14 @@ anything that is scheduled to be run in that amount of time. `resume()`-ing afte
 point will execute any scheduled functions as though `time` has passed (i.e. shorter
 timeout, shorter first invocation of interval function)
 
+`timer.unref`  
+Calls [`unref()`][2] if inside node.js environment. Effectively prevents all timers set so
+far to keep the process alive if they are the only thing waiting to run inside the event
+loop. Useful for cleaning up after timer tests.
+
+`timer.ref`  
+Calls [`ref()`][3] if inside node.js environment. Reverses the effect of `unref()`.
+
 # OVERLOADS
 
 Both `timer.timeout` and `timer.interval` can be called in either of the following ways:
@@ -119,6 +127,12 @@ timer.timeout(function() { }, 100);
 timer.interval(100, function() { }); // also works
 timer.interval(function() { }, 100);
 ```
+
+# REFS / UNREFS
+
+All timers are `ref()`-ed by default. See [node.js timers doc][0] for more information
+about `ref()` and `unref()`. For convenience `timer-shim` provides a top-level `unref()`
+method to `unref()` on all timers.
 
 # DEVELOPMENT
 
@@ -149,5 +163,10 @@ BSD
 
 # SUPPORT
 
-Just open a GitHub issue or ping me [@chakrit](http://twitter.com/chakrit) on Twitter.
+Just open a GitHub issue or ping me [@chakrit][1] on Twitter.
+
+ [0]: http://nodejs.org/api/timers.html
+ [1]: http://twitter.com/chakrit
+ [2]: http://nodejs.org/api/timers.html#timers_unref
+ [3]: http://nodejs.org/api/timers.html#timers_ref
 
