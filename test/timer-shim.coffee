@@ -95,7 +95,7 @@ do ->
       itShouldHaveAliases 'timeout', 't,to,timeout,setTimeout'.s()
 
       it 'should works like setTimeout', (done) ->
-        @call 1, done # mocha will complain for multiple calls
+        @call 1, -> done() # mocha will complain for multiple calls
 
     describe 'interval() method', ->
       before -> @call = -> @timer.i.apply @timer, arguments
@@ -113,4 +113,30 @@ do ->
           if ++count is 3
             @timer.clear handle
             done()
+
+    describe 'unref() method', ->
+      before -> @unref = -> @timer.unref.apply @timer, arguments
+      after -> delete @unref
+
+      it 'should be exported', -> @unref.should.be.a 'function'
+
+      it 'should calls unref() on all scheduled timers', (done) ->
+        id = @timer.timeout 1, -> done()
+        stub id, 'unref'
+        @unref()
+        id.unref.called.should.be.true
+        id.unref.restore()
+
+    describe 'ref() method', ->
+      before -> @ref = -> @timer.ref.apply @timer, arguments
+      after -> delete @ref
+
+      it 'should be exported', -> @ref.should.be.a 'function'
+
+      it 'should calls ref() on all scheduled timers', (done) ->
+        id = @timer.timeout 1, -> done()
+        spy id, 'ref'
+        @ref()
+        id.ref.called.should.be.true
+        id.ref.restore()
 

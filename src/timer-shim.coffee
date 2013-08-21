@@ -75,6 +75,14 @@ module.exports = do ->
       @windedTime += time
       @windedTime = @_wind @windedTime
 
+    unref: ->
+      return unless @id and typeof @id.unref is 'function'
+      @id.unref()
+
+    ref: ->
+      return unless @id and typeof @id.ref is 'function'
+      @id.ref()
+
     _pause: -> throw new Error 'must be overridden'
     _resume: -> throw new Error 'must be overridden'
 
@@ -157,6 +165,14 @@ module.exports = do ->
     wind: (time) ->
       @tasks.resetCursor()
       @tasks.current.wind time while @tasks.next()
+
+    unref: ->
+      @tasks.resetCursor()
+      @tasks.current.unref() while @tasks.next()
+
+    ref: ->
+      @tasks.resetCursor()
+      @tasks.current.ref() while @tasks.next()
 
     _checkAndClean: ->
       return unless @tasks.length > @_lastCleanedLength * CLEAN_THRESHOLD
